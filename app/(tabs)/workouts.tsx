@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { Play, Clock, BarChart as BarChart2, Filter, Plus } from 'lucide-react-native';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const workouts = [
   {
@@ -210,15 +210,13 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   workoutsGrid: {
-    // Removemos o alignItems: 'center' que estava forçando a centralização horizontal
-    flexDirection: 'column', // Mantém os cards em uma coluna
+    flexDirection: 'column',
     marginBottom: 16,
-    width: '100%', // Garantir que o grid ocupe toda a largura da tela
-    alignSelf: 'center', // Isso centraliza o conteúdo horizontalmente
+    width: '100%',
+    alignSelf: 'center',
   },
   workoutCard: {
-    // Garantir que cada card ocupe a largura total disponível
-    width: '100%', // Ocupa a largura total da tela
+    width: '100%',
     backgroundColor: '#ffffff',
     borderRadius: 16,
     overflow: 'hidden',

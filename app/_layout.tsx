@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { Stack, useSegments, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { useFrameworkReady } from '../hooks/useFrameworkReady';
+import { ThemeProvider } from '../context/ThemeContext';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SplashScreen } from 'expo-router';
 

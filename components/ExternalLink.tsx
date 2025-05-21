@@ -6,17 +6,21 @@ import { Platform } from 'react-native';
 export function ExternalLink(
   props: Omit<React.ComponentProps<typeof Link>, 'href'> & { href: string }
 ) {
+  const { href, ...rest } = props;
+
+  const handlePress = (e: React.SyntheticEvent) => {
+    if (Platform.OS !== 'web') {
+      e.preventDefault();
+      WebBrowser.openBrowserAsync(href);
+    }
+  };
+
   return (
     <Link
+      {...rest}
+      href={href}
+      onPress={handlePress}
       target="_blank"
-      {...props}
-      href={props.href}
-      onPress={(e) => {
-        if (Platform.OS !== 'web') {
-          e.preventDefault();
-          WebBrowser.openBrowserAsync(props.href as string);
-        }
-      }}
     />
   );
 }

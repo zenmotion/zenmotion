@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Moon, Bell, Lock, Globe, CircleHelp as HelpCircle, Info } from 'lucide-react-native';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function SettingsScreen() {
   const router = useRouter();

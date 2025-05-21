@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useSearchParams } from 'expo-router';
 import { ChevronLeft, Save, Clock, Dumbbell, Plus, Trash2 } from 'lucide-react-native';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function EditWorkoutScreen() {
   const router = useRouter();
@@ -34,7 +34,6 @@ export default function EditWorkoutScreen() {
           <TouchableOpacity 
             style={styles.saveButton}
             onPress={() => {
-              // Here you would save the workout changes
               alert('Alterações salvas com sucesso!');
               router.back();
             }}
@@ -106,7 +105,6 @@ export default function EditWorkoutScreen() {
                   <TouchableOpacity 
                     style={styles.deleteButton}
                     onPress={() => {
-                      // Here you would delete the exercise
                       alert('Exercício removido: ' + exercise.name);
                     }}
                   >
@@ -118,7 +116,6 @@ export default function EditWorkoutScreen() {
             <TouchableOpacity 
               style={[styles.addExerciseButton, isDark && styles.addExerciseButtonDark]}
               onPress={() => {
-                // Here you would open a modal to add an exercise
                 alert('Adicionar novo exercício');
               }}
             >
@@ -131,7 +128,6 @@ export default function EditWorkoutScreen() {
         <TouchableOpacity 
           style={styles.deleteWorkoutButton}
           onPress={() => {
-            // Here you would delete the workout
             alert('Treino excluído com sucesso!');
             router.back();
           }}

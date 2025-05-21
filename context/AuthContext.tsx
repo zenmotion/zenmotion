@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
 import { authApi } from '../lib/api';
 
 interface User {
@@ -52,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = await AsyncStorage.getItem('accessToken');
       if (token) {
         setIsAuthenticated(true);
-        // Fetch user profile
+
         const userData = await authApi.getProfile();
         setUser(userData);
       }
@@ -71,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.setItem('accessToken', access);
       await AsyncStorage.setItem('refreshToken', refresh);
       setIsAuthenticated(true);
-      // Fetch user profile after successful login
+
       const userData = await authApi.getProfile();
       setUser(userData);
     } catch (error) {

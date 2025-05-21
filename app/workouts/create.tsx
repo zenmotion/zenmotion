@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Plus, Clock, Dumbbell } from 'lucide-react-native';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function CreateWorkoutScreen() {
   const router = useRouter();
@@ -19,7 +19,6 @@ export default function CreateWorkoutScreen() {
           <TouchableOpacity 
             style={styles.saveButton}
             onPress={() => {
-              // Here you would save the workout
               alert('Treino criado com sucesso!');
               router.back();
             }}
@@ -100,7 +99,6 @@ export default function CreateWorkoutScreen() {
             <TouchableOpacity 
               style={[styles.addExerciseButton, isDark && styles.addExerciseButtonDark]}
               onPress={() => {
-                // Here you would open a modal to add an exercise
                 alert('Adicionar novo exercício');
               }}
             >

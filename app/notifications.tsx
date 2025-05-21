@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Bell, Clock, Calendar, Trophy, Heart } from 'lucide-react-native';
-import { useTheme } from '@/context/ThemeContext';
+import { ChevronLeft, Clock, Calendar, Trophy, Heart } from 'lucide-react-native';
+import { useTheme } from '../context/ThemeContext';
 
 export default function NotificationsScreen() {
   const router = useRouter();

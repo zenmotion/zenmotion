@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { Plus, Apple, Coffee, Pizza } from 'lucide-react-native';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function NutritionScreen() {
   const { isDark } = useTheme();
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   mealCard: {
-    width: '100%',  // Isso vai garantir que o card ocupe 100% da largura disponível
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ffffff',
@@ -280,6 +280,9 @@ const styles = StyleSheet.create({
     iconColor: '#6366f1',
   },
   light: {
+    container: {
+      backgroundColor: '#f8fafc',
+    },
     iconColor: '#6366f1',
   },
 });
