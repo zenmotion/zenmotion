@@ -11,9 +11,9 @@ export default function ForgotPassword() {
     const handleResetPassword = async () => {
         try {
 
-            setMessage('Password reset instructions have been sent to your email.');
+            setMessage('As instruções para redefinir sua senha foram enviadas para seu email.');
         } catch (err) {
-            setMessage('Failed to send reset instructions. Please try again.');
+            setMessage('Falha ao enviar instruções. Tente novamente.');
         }
     };
 
@@ -24,13 +24,13 @@ export default function ForgotPassword() {
                 style={styles.backgroundImage}
             />
             <View style={styles.content}>
-                <Text style={[styles.title, { color: colors.text.primary }]}>Reset Password</Text>
+                <Text style={[styles.title, { color: colors.text.primary }]}>Redefinir Senha</Text>
                 <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-                    Enter your email to receive reset instructions
+                    Informe seu email para receber as instruções de redefinição
                 </Text>
 
                 {message ? (
-                    <Text style={[styles.message, { color: message.includes('Failed') ? colors.error : colors.success }]}>
+                    <Text style={[styles.message, { color: message.includes('Falha') ? colors.error : colors.success }]}>
                         {message}
                     </Text>
                 ) : null}
@@ -46,11 +46,11 @@ export default function ForgotPassword() {
                 />
 
                 <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleResetPassword}>
-                    <Text style={styles.buttonText}>Send Reset Instructions</Text>
+                    <Text style={styles.buttonText}>Enviar Instruções</Text>
                 </TouchableOpacity>
 
                 <Link href="/login" style={styles.link}>
-                    <Text style={[styles.linkText, { color: colors.primary }]}>Back to Sign In</Text>
+                    <Text style={[styles.linkText, { color: colors.primary }]}>Voltar para o Login</Text>
                 </Link>
             </View>
         </View>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Plus, UtensilsCrossed, Apple, Beef, Coffee, Scale } from 'lucide-react-native';
+import { Plus, UtensilsCrossed, Apple, Beef, Coffee, Scale, Footprints } from 'lucide-react-native';
 import { mealApi } from '@/api/api';
 import { VictoryPie } from 'victory-native';
 import NutritionModal from '@/components/NutritionModal';
+
 
 type Meal = {
   id: number;
@@ -22,7 +23,8 @@ export default function Nutrition() {
   const [searchQuery, setSearchQuery] = useState('');
   const [recentMeals, setRecentMeals] = useState<Meal[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState<Meal | undefined>();
+  const [selectedMeal, setSelectedMeal] = useState<Meal | undefined>(undefined);
+
 
   useEffect(() => {
     loadMeals();
@@ -68,6 +70,15 @@ export default function Nutrition() {
     setIsModalVisible(true);
   };
 
+  const handleDeleteMeal = async (id: number) => {
+    try {
+      await mealApi.delete(id);
+      loadMeals();
+    } catch (error) {
+      console.error('Erro ao excluir refeição:', error);
+    }
+  };
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
@@ -77,7 +88,7 @@ export default function Nutrition() {
         </Text>
       </View>
 
-      <View style={[styles.searchContainer, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>
+      {/* <View style={[styles.searchContainer, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>
         <TextInput
           style={[styles.searchInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
           placeholder="Buscar alimentos..."
@@ -85,30 +96,33 @@ export default function Nutrition() {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-      </View>
+      </View> */}
 
-      <View style={[styles.macrosCard, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>
+      <View style={[styles.macrosCard, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>  
         <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Macros de Hoje</Text>
-        <View style={styles.macrosChart}>
-          <VictoryPie
-            data={macroData}
-            colorScale={macroData.map(d => d.color)}
-            innerRadius={70}
-            labelRadius={90}
-            style={{ labels: { fill: 'none' } }}
-          />
-          <View style={styles.macrosCenter}>
-            <Text style={[styles.calorieValue, { color: colors.text.primary }]}>{totalCalories}</Text>
-            <Text style={[styles.calorieLabel, { color: colors.text.secondary }]}>kcal hoje</Text>
+        <View style={styles.macrosChartWrapper}>
+          <View style={styles.macrosChart}>
+            <VictoryPie
+              data={macroData}
+              colorScale={macroData.map(d => d.color)}
+              innerRadius={70}
+              labelRadius={90}
+              style={{ labels: { fill: 'none' } }}
+              width={200}
+              height={200}
+              padding={{ top: 0, bottom: 0, left: 0, right: 0 }}
+            />
+            <View style={styles.macrosCenter}>
+              <Text style={[styles.calorieValue, { color: colors.text.primary }]}>{totalCalories}</Text>
+              <Text style={[styles.calorieLabel, { color: colors.text.secondary }]}>kcal hoje</Text>
+            </View>
           </View>
         </View>
         <View style={styles.macrosLegend}>
           {macroData.map((macro) => (
             <View key={macro.x} style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: macro.color }]} />
-              <Text style={[styles.legendText, { color: colors.text.primary }]}>
-                {macro.x}: {macro.y}g
-              </Text>
+              <Text style={[styles.legendText, { color: colors.text.secondary }]}>{macro.x}</Text>
             </View>
           ))}
         </View>
@@ -135,19 +149,27 @@ export default function Nutrition() {
       <View style={styles.recentMeals}>
         <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Refeições de Hoje</Text>
         {recentMeals.map((meal) => (
-          <TouchableOpacity
+          <View
             key={meal.id}
             style={[styles.mealCard, { backgroundColor: colors.card.background, ...colors.card.shadow }]}
-            onPress={() => handleEditMeal(meal)}>
+          >
             <View style={styles.mealHeader}>
               <View style={styles.mealTypeInfo}>
                 <Text style={[styles.mealType, { color: colors.text.primary }]}>{meal.meal_type}</Text>
                 <Text style={[styles.mealTime, { color: colors.text.secondary }]}>{meal.time}</Text>
               </View>
-              <Text style={[styles.mealCalories, { color: colors.primary }]}>{meal.calories} kcal</Text>
+              <Text style={[styles.mealCalories, { color: colors.text.primary }]}>{meal.calories} kcal</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity onPress={() => handleEditMeal(meal)} style={{ marginLeft: 8 }}>
+                  <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Editar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDeleteMeal(meal.id)} style={{ marginLeft: 8 }}>
+                  <Text style={{ color: colors.error, fontWeight: 'bold' }}>Excluir</Text>
+                </TouchableOpacity>
+              </View>
             </View>
             <Text style={[styles.foodItems, { color: colors.text.secondary }]}>{meal.food_items}</Text>
-            <View style={styles.macroGrid}>
+            <View style={[styles.macroGrid, { flexWrap: 'wrap', justifyContent: 'space-between' }]}> 
               <View style={styles.macroItem}>
                 <Text style={[styles.macroValue, { color: colors.text.primary }]}>{meal.carbs}g</Text>
                 <Text style={[styles.macroLabel, { color: colors.text.secondary }]}>Carboidratos</Text>
@@ -161,7 +183,7 @@ export default function Nutrition() {
                 <Text style={[styles.macroLabel, { color: colors.text.secondary }]}>Gordura</Text>
               </View>
             </View>
-          </TouchableOpacity>
+          </View>
         ))}
       </View>
 
@@ -178,6 +200,7 @@ export default function Nutrition() {
         onSave={loadMeals}
         initialData={selectedMeal}
       />
+
     </ScrollView>
   );
 }
@@ -221,10 +244,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     marginBottom: 16,
   },
+  macrosChartWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    paddingVertical: 0,
+  },
   macrosChart: {
+    width: 200,
     height: 200,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   macrosCenter: {
     position: 'absolute',
@@ -339,5 +371,34 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontFamily: 'Inter_600SemiBold',
+  },
+  stepsCard: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 0,
+  },
+  stepsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  stepsLabel: {
+    fontSize: 16,
+    fontFamily: 'Inter_500Medium',
+    flex: 1,
+    marginLeft: 8,
+  },
+  stepsValue: {
+    fontSize: 20,
+    fontFamily: 'Inter_700Bold',
+    marginRight: 8,
+  },
+  stepsAddButton: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 4,
+    backgroundColor: 'white',
   },
 });

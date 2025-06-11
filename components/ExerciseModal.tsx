@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { X } from 'lucide-react-native';
@@ -23,6 +23,15 @@ export default function ExerciseModal({ isVisible, onClose, onSave, initialData 
     duration_minutes: initialData?.duration_minutes?.toString() || '',
     calories_burned: initialData?.calories_burned?.toString() || '',
   });
+
+  // Corrige o bug: sempre que abrir para editar, sincroniza os campos
+  useEffect(() => {
+    setFormData({
+      type: initialData?.type || '',
+      duration_minutes: initialData?.duration_minutes?.toString() || '',
+      calories_burned: initialData?.calories_burned?.toString() || '',
+    });
+  }, [initialData, isVisible]);
 
   const handleSave = async () => {
     try {
@@ -56,7 +65,7 @@ export default function ExerciseModal({ isVisible, onClose, onSave, initialData 
         <View style={[styles.modalContent, { backgroundColor: colors.card.background }]}>
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-              {initialData ? 'Edit Workout' : 'Add Workout'}
+              {initialData ? 'Editar Treino' : 'Adicionar Treino'}
             </Text>
             <TouchableOpacity onPress={onClose}>
               <X size={24} color={colors.text.primary} />
@@ -65,7 +74,7 @@ export default function ExerciseModal({ isVisible, onClose, onSave, initialData 
 
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-            placeholder="Workout Type (e.g., Running, Cycling)"
+            placeholder="Tipo de Treino (ex: Corrida, Ciclismo)"
             placeholderTextColor={colors.text.secondary}
             value={formData.type}
             onChangeText={(text) => setFormData({ ...formData, type: text })}
@@ -73,7 +82,7 @@ export default function ExerciseModal({ isVisible, onClose, onSave, initialData 
 
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-            placeholder="Duration (minutes)"
+            placeholder="Duração (minutos)"
             placeholderTextColor={colors.text.secondary}
             value={formData.duration_minutes}
             onChangeText={(text) => setFormData({ ...formData, duration_minutes: text })}
@@ -82,7 +91,7 @@ export default function ExerciseModal({ isVisible, onClose, onSave, initialData 
 
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-            placeholder="Calories Burned"
+            placeholder="Calorias Queimadas"
             placeholderTextColor={colors.text.secondary}
             value={formData.calories_burned}
             onChangeText={(text) => setFormData({ ...formData, calories_burned: text })}
@@ -92,7 +101,7 @@ export default function ExerciseModal({ isVisible, onClose, onSave, initialData 
           <TouchableOpacity
             style={[styles.saveButton, { backgroundColor: colors.primary }]}
             onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save Workout</Text>
+            <Text style={styles.saveButtonText}>Salvar Treino</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -18,6 +18,7 @@ export default function Exercise() {
   const [isTracking, setIsTracking] = useState(false);
   const [workoutTime, setWorkoutTime] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingWorkout, setEditingWorkout] = useState<WorkoutType | null>(null);
   const [recentWorkouts, setRecentWorkouts] = useState<WorkoutType[]>([]);
 
   useEffect(() => {
@@ -25,13 +26,15 @@ export default function Exercise() {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | undefined;
     if (isTracking) {
       interval = setInterval(() => {
         setWorkoutTime((prev) => prev + 1);
-      }, 1000);
+      }, 1000) as unknown as NodeJS.Timeout;
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isTracking]);
 
   const loadWorkouts = async () => {
@@ -39,7 +42,9 @@ export default function Exercise() {
       const response = await workoutApi.getAll();
       setRecentWorkouts(response.map((workout: any) => ({
         ...workout,
-        date: new Date(workout.created_at).toLocaleDateString('pt-BR')
+        date: new Date(workout.date || workout.created_at).toLocaleString('pt-BR', {
+          day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'
+        })
       })));
     } catch (error) {
       console.error('Erro ao carregar treinos:', error);
@@ -86,10 +91,23 @@ export default function Exercise() {
         {recentWorkouts.map((workout) => (
           <View
             key={workout.id}
-            style={[styles.workoutCard, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>
+            style={[styles.workoutCard, { backgroundColor: colors.card.background, ...colors.card.shadow }]}
+          >
             <View style={styles.workoutHeader}>
               <Text style={[styles.workoutType, { color: colors.text.primary }]}>{workout.type}</Text>
               <Text style={[styles.workoutDate, { color: colors.text.secondary }]}>{workout.date}</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  onPress={() => { setEditingWorkout(workout); setIsModalVisible(true); }}
+                  style={{ marginLeft: 8 }}>
+                  <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Editar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={async () => { await workoutApi.delete(workout.id); loadWorkouts(); }}
+                  style={{ marginLeft: 8 }}>
+                  <Text style={{ color: colors.error, fontWeight: 'bold' }}>Excluir</Text>
+                </TouchableOpacity>
+              </View>
             </View>
             <View style={styles.workoutStats}>
               <View style={styles.workoutStat}>
@@ -111,7 +129,7 @@ export default function Exercise() {
 
       <TouchableOpacity
         style={[styles.addButton, { backgroundColor: colors.primary }]}
-        onPress={() => setIsModalVisible(true)}>
+        onPress={() => { setEditingWorkout(null); setIsModalVisible(true); }}>
         <Plus size={24} color="white" />
         <Text style={styles.addButtonText}>Adicionar Manualmente</Text>
       </TouchableOpacity>
@@ -120,6 +138,7 @@ export default function Exercise() {
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         onSave={loadWorkouts}
+        initialData={editingWorkout || undefined}
       />
     </ScrollView>
   );

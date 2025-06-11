@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Picker } from '@react-native-picker/picker';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { X } from 'lucide-react-native';
@@ -21,6 +22,13 @@ type NutritionModalProps = {
 
 export default function NutritionModal({ isVisible, onClose, onSave, initialData }: NutritionModalProps) {
   const { colors } = useTheme();
+  const mealTypeOptions = [
+    'Café da Manhã',
+    'Lanche',
+    'Almoço',
+    'Jantar',
+  ];
+
   const [formData, setFormData] = useState({
     meal_type: initialData?.meal_type || '',
     food_items: initialData?.food_items || '',
@@ -29,6 +37,29 @@ export default function NutritionModal({ isVisible, onClose, onSave, initialData
     protein: initialData?.protein?.toString() || '',
     fat: initialData?.fat?.toString() || '',
   });
+
+  // Reset form when opening for new meal
+  React.useEffect(() => {
+    if (!initialData && isVisible) {
+      setFormData({
+        meal_type: '',
+        food_items: '',
+        calories: '',
+        carbs: '',
+        protein: '',
+        fat: '',
+      });
+    } else if (initialData && isVisible) {
+      setFormData({
+        meal_type: initialData.meal_type || '',
+        food_items: initialData.food_items || '',
+        calories: initialData.calories?.toString() || '',
+        carbs: initialData.carbs?.toString() || '',
+        protein: initialData.protein?.toString() || '',
+        fat: initialData.fat?.toString() || '',
+      });
+    }
+  }, [isVisible, initialData]);
 
   const handleSave = async () => {
     try {
@@ -46,6 +77,14 @@ export default function NutritionModal({ isVisible, onClose, onSave, initialData
         await mealApi.update(initialData.id, data);
       } else {
         await mealApi.create(data);
+        setFormData({
+          meal_type: '',
+          food_items: '',
+          calories: '',
+          carbs: '',
+          protein: '',
+          fat: '',
+        });
       }
 
       onSave();
@@ -54,6 +93,7 @@ export default function NutritionModal({ isVisible, onClose, onSave, initialData
       console.error('Failed to save meal:', error);
     }
   };
+
 
   return (
     <Modal
@@ -65,63 +105,73 @@ export default function NutritionModal({ isVisible, onClose, onSave, initialData
         <View style={[styles.modalContent, { backgroundColor: colors.card.background }]}>
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-              {initialData ? 'Edit Meal' : 'Add Meal'}
+              {initialData ? 'Editar Refeição' : 'Adicionar Refeição'}
             </Text>
             <TouchableOpacity onPress={onClose}>
               <X size={24} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
 
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-            placeholder="Meal Type (e.g., Breakfast, Lunch)"
-            placeholderTextColor={colors.text.secondary}
-            value={formData.meal_type}
-            onChangeText={(text) => setFormData({ ...formData, meal_type: text })}
-          />
+          <View style={[styles.input, { padding: 0, marginBottom: 16, backgroundColor: colors.surface, borderColor: colors.border, flexDirection: 'row', alignItems: 'center' }]}> 
+            <Picker
+              style={{
+                flex: 1,
+                padding: 16,
+                borderRadius: 12,
+                fontFamily: 'Inter_400Regular',
+                fontSize: 16,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                color: colors.text.primary,
+                borderWidth: 0,
+              }}
+              selectedValue={formData.meal_type}
+              onValueChange={(itemValue: string) => setFormData({ ...formData, meal_type: itemValue })}
+            >
+              <Picker.Item label="Selecione o tipo de refeição" value="" />
+              {mealTypeOptions.map(opt => (
+                <Picker.Item key={opt} label={opt} value={opt} />
+              ))}
+            </Picker>
+          </View>
 
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-            placeholder="Food Items"
+            placeholder="Alimentos"
             placeholderTextColor={colors.text.secondary}
             value={formData.food_items}
             onChangeText={(text) => setFormData({ ...formData, food_items: text })}
             multiline
           />
 
-          <View style={styles.macroInputs}>
+          <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
             <TextInput
-              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-              placeholder="Calories"
+              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary, minWidth: 120, flex: 1 }]}
+              placeholder="Calorias"
               placeholderTextColor={colors.text.secondary}
               value={formData.calories}
               onChangeText={(text) => setFormData({ ...formData, calories: text })}
               keyboardType="numeric"
             />
-
             <TextInput
-              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-              placeholder="Carbs (g)"
+              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary, minWidth: 120, flex: 1 }]}
+              placeholder="Carboidratos (g)"
               placeholderTextColor={colors.text.secondary}
               value={formData.carbs}
               onChangeText={(text) => setFormData({ ...formData, carbs: text })}
               keyboardType="numeric"
             />
-          </View>
-
-          <View style={styles.macroInputs}>
             <TextInput
-              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-              placeholder="Protein (g)"
+              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary, minWidth: 120, flex: 1 }]}
+              placeholder="Proteína (g)"
               placeholderTextColor={colors.text.secondary}
               value={formData.protein}
               onChangeText={(text) => setFormData({ ...formData, protein: text })}
               keyboardType="numeric"
             />
-
             <TextInput
-              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary }]}
-              placeholder="Fat (g)"
+              style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary, minWidth: 120, flex: 1 }]}
+              placeholder="Gordura (g)"
               placeholderTextColor={colors.text.secondary}
               value={formData.fat}
               onChangeText={(text) => setFormData({ ...formData, fat: text })}
@@ -132,7 +182,7 @@ export default function NutritionModal({ isVisible, onClose, onSave, initialData
           <TouchableOpacity
             style={[styles.saveButton, { backgroundColor: colors.primary }]}
             onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save Meal</Text>
+            <Text style={styles.saveButtonText}>Salvar Refeição</Text>
           </TouchableOpacity>
         </View>
       </View>

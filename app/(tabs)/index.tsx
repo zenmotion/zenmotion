@@ -8,16 +8,18 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Activity, TrendingUp, Utensils, Target } from 'lucide-react-native';
+import { Activity, TrendingUp, Utensils, Target, Footprints } from 'lucide-react-native';
 import {
   VictoryPie,
   VictoryChart,
   VictoryLine,
   VictoryAxis,
+  VictoryScatter,
 } from 'victory-native';
-import { workoutApi, mealApi, stepRecordApi } from '@/api/api';
+import { workoutApi, mealApi, stepRecordApi, userApi } from '@/api/api';
 import NutritionModal from '@/components/NutritionModal';
 import GoalModal from '@/components/GoalModal';
+import StepModal from '@/components/StepModal';
 
 export default function Dashboard() {
   const { colors } = useTheme();
@@ -26,23 +28,40 @@ export default function Dashboard() {
   const [caloriesConsumed, setCaloriesConsumed] = useState(0);
   const [caloriesBurned, setCaloriesBurned] = useState(0);
   const [steps, setSteps] = useState(0);
-  const [activityData, setActivityData] = useState([]);
+  const [activityData, setActivityData] = useState<{ x: number; y: number }[]>([]);
   const [isNutritionModalVisible, setIsNutritionModalVisible] = useState(false);
   const [isGoalModalVisible, setIsGoalModalVisible] = useState(false);
+  const [isStepModalVisible, setIsStepModalVisible] = useState(false);
+
+  const [userName, setUserName] = useState('');
+  const [userGender, setUserGender] = useState<'M'|'F'|'O'|undefined>(undefined);
 
   useEffect(() => {
     loadDashboardData();
+    loadUser();
   }, []);
+
+  const loadUser = async () => {
+    try {
+      // Substitua 1 pelo id dinâmico se disponível
+      const user = await userApi.getById(1);
+      setUserName(user.name);
+      setUserGender(user.gender);
+    } catch (error) {
+      setUserName('Usuário');
+      setUserGender(undefined);
+    }
+  };
 
   const loadDashboardData = async () => {
     try {
       const meals = await mealApi.getAll();
-      const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
+      const totalCalories = meals.reduce((sum: number, meal: any) => sum + meal.calories, 0);
       setCaloriesConsumed(totalCalories);
 
       const workouts = await workoutApi.getAll();
       const totalBurned = workouts.reduce(
-        (sum, workout) => sum + workout.calories_burned,
+        (sum: number, workout: any) => sum + workout.calories_burned,
         0
       );
       setCaloriesBurned(totalBurned);
@@ -53,7 +72,7 @@ export default function Dashboard() {
       }
 
       setActivityData(
-        stepRecords.map((record, index) => ({
+        stepRecords.map((record: any, index: number) => ({
           x: index + 1,
           y: record.steps,
         }))
@@ -66,6 +85,19 @@ export default function Dashboard() {
   const handleAddMeal = () => setIsNutritionModalVisible(true);
   const handleSetGoal = () => setIsGoalModalVisible(true);
 
+  const handleAddSteps = () => setIsStepModalVisible(true);
+
+  const handleSaveSteps = async (newSteps: number) => {
+    try {
+      await stepRecordApi.create({ user: 1, steps: newSteps, recorded_at: new Date().toISOString().slice(0, 10) });
+      setSteps(newSteps);
+      loadDashboardData();
+    } catch (error) {
+      console.error('Erro ao adicionar passos:', error);
+    }
+    setIsStepModalVisible(false);
+  };
+
   const calorieData = [
     { x: 'Consumidas', y: caloriesConsumed, color: colors.primary },
     { x: 'Restantes', y: 2500 - caloriesConsumed, color: colors.secondary },
@@ -74,8 +106,11 @@ export default function Dashboard() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.greeting, { color: colors.text.primary }]}>
-          Bem-vindo(a), Sarah!
+        <Text style={[styles.greeting, { color: colors.text.primary }]}>  
+          {userGender === 'M' && `Bem-vindo, ${userName}!`}
+          {userGender === 'F' && `Bem-vinda, ${userName}!`}
+          {userGender === 'O' && `Bem-vindo(a), ${userName}!`}
+          {!userGender && `Bem-vindo, ${userName}!`}
         </Text>
         <Text style={[styles.date, { color: colors.text.secondary }]}>
           {new Date().toLocaleDateString('pt-BR', {
@@ -148,38 +183,46 @@ export default function Dashboard() {
         </View>
       </View>
 
-      <View
-        style={[
-          styles.section,
-          { backgroundColor: colors.card.background, ...colors.card.shadow },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-          Atividade Semanal
-        </Text>
+      <View style={[styles.activityCard, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>
+        <Text style={[styles.activityTitle, { color: colors.text.primary, textAlign: 'center' }]}>Atividade Semanal</Text>
         <VictoryChart
-          height={200}
-          padding={{ top: 20, bottom: 30, left: 40, right: 20 }}
-          width={width * 0.95}
+          height={220}
+          padding={{ top: 16, bottom: 36, left: 56, right: 16 }}
+          width={width * 0.98}
+          domainPadding={{ x: 20, y: 20 }}
         >
           <VictoryAxis
+            label="Dia"
             style={{
               axis: { stroke: colors.text.secondary },
-              tickLabels: { fill: colors.text.secondary },
+              tickLabels: { fill: colors.text.secondary, fontFamily: 'Inter_400Regular', fontSize: 13 },
+              axisLabel: { fill: colors.text.secondary, fontSize: 14, padding: 24, fontFamily: 'Inter_500Medium' },
+              grid: { stroke: '#e5e7eb', strokeDasharray: '4,4' },
             }}
           />
           <VictoryAxis
             dependentAxis
+            label="Passos"
+            domain={[0, Math.max(...activityData.map(d => d.y), 10000) * 1.1]}
+            tickFormat={(t) => t >= 1000 ? `${Math.round(t/1000)}k` : t}
             style={{
               axis: { stroke: colors.text.secondary },
-              tickLabels: { fill: colors.text.secondary },
+              tickLabels: { fill: colors.text.secondary, fontFamily: 'Inter_400Regular', fontSize: 13 },
+              axisLabel: { fill: colors.text.secondary, fontSize: 14, padding: 28, fontFamily: 'Inter_500Medium' },
+              grid: { stroke: '#e5e7eb', strokeDasharray: '4,4' },
             }}
           />
           <VictoryLine
             data={activityData}
             style={{
-              data: { stroke: colors.primary },
+              data: { stroke: colors.primary, strokeWidth: 3 },
             }}
+            interpolation="monotoneX"
+          />
+          <VictoryScatter
+            data={activityData}
+            size={5}
+            style={{ data: { fill: colors.primary } }}
           />
         </VictoryChart>
       </View>
@@ -191,6 +234,14 @@ export default function Dashboard() {
         >
           <Utensils size={24} color="white" />
           <Text style={styles.actionButtonText}>Registrar Refeição</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: (colors as any).tertiary ?? '#06b6d4' }]}
+          onPress={handleAddSteps}
+        >
+          <Footprints size={24} color="white" />
+          <Text style={styles.actionButtonText}>Adicionar Passos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -216,11 +267,29 @@ export default function Dashboard() {
         onClose={() => setIsGoalModalVisible(false)}
         onSave={() => setIsGoalModalVisible(false)}
       />
+      <StepModal
+        visible={isStepModalVisible}
+        onClose={() => setIsStepModalVisible(false)}
+        onSave={handleSaveSteps}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  activityCard: {
+    marginHorizontal: 16,
+    marginBottom: 24,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+  },
+  activityTitle: {
+    fontSize: 18,
+    fontFamily: 'Poppins_600SemiBold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
   },

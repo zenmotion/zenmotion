@@ -1,7 +1,9 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
-const BASE_URL = 'https://localhost:8000';
+// Defina API_BASE_URL no seu .env para apontar para o backend desejado. Exemplo:
+// API_BASE_URL=http://localhost:8000/api
+const BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -10,51 +12,10 @@ export const api = axios.create({
   },
 });
 
-api.interceptors.request.use(
-  async (config) => {
-    const token = await AsyncStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
-        const response = await api.post('/refresh/', { refresh: refreshToken });
-        const { access } = response.data;
-
-        await AsyncStorage.setItem('accessToken', access);
-        originalRequest.headers.Authorization = `Bearer ${access}`;
-
-        return api(originalRequest);
-      } catch (refreshError) {
-        await AsyncStorage.removeItem('accessToken');
-        await AsyncStorage.removeItem('refreshToken');
-        window.location.href = '/auth/login';
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
 export const authApi = {
   login: async (email: string, password: string) => {
     const response = await api.post('/login/', { email, password });
+    // Aqui você pode salvar o estado de usuário autenticado, se necessário
     return response.data;
   },
   register: async (userData: {
@@ -66,23 +27,17 @@ export const authApi = {
     height_cm: number;
     weight_kg: number;
   }) => {
-    const response = await api.post('/user/', userData);
+    const response = await api.post('/user', userData);
     return response.data;
   },
   logout: async () => {
-    const refreshToken = await AsyncStorage.getItem('refreshToken');
-    await api.post('/logout/', { refresh: refreshToken });
-  },
-  verify: async (token: string) => {
-    const response = await api.post('/verify/', { token });
-    return response.data;
-  },
+    router.replace('/login');
+  }
 };
-
 
 export const userApi = {
   getAll: async () => {
-    const response = await api.get('/user/');
+    const response = await api.get('/user');
     return response.data;
   },
   getById: async (id: number) => {
@@ -111,7 +66,7 @@ export const userApi = {
 
 export const preferencesApi = {
   getAll: async () => {
-    const response = await api.get('/user_preferences/');
+    const response = await api.get('/user_preferences');
     return response.data;
   },
   create: async (data: {
@@ -120,7 +75,7 @@ export const preferencesApi = {
     preferred_units: 'metric' | 'imperial';
     notifications_enabled: boolean;
   }) => {
-    const response = await api.post('/user_preferences/', data);
+    const response = await api.post('/user_preferences', data);
     return response.data;
   },
   getById: async (id: number) => {
@@ -146,7 +101,7 @@ export const preferencesApi = {
 
 export const goalApi = {
   getAll: async () => {
-    const response = await api.get('/goal/');
+    const response = await api.get('/goal');
     return response.data;
   },
   create: async (data: {
@@ -157,7 +112,7 @@ export const goalApi = {
     deadline: string;
     is_completed?: boolean;
   }) => {
-    const response = await api.post('/goal/', data);
+    const response = await api.post('/goal', data);
     return response.data;
   },
   getById: async (id: number) => {
@@ -185,7 +140,7 @@ export const goalApi = {
 
 export const healthReportApi = {
   getAll: async () => {
-    const response = await api.get('/health_report/');
+    const response = await api.get('/health_report');
     return response.data;
   },
   create: async (data: {
@@ -197,7 +152,7 @@ export const healthReportApi = {
     weight_change: number;
     summary_text: string;
   }) => {
-    const response = await api.post('/health_report/', data);
+    const response = await api.post('/health_report', data);
     return response.data;
   },
   getById: async (id: number) => {
@@ -226,7 +181,7 @@ export const healthReportApi = {
 
 export const mealApi = {
   getAll: async () => {
-    const response = await api.get('/meal/');
+    const response = await api.get('/meal');
     return response.data;
   },
   create: async (data: {
@@ -238,7 +193,7 @@ export const mealApi = {
     protein: number;
     fat: number;
   }) => {
-    const response = await api.post('/meal/', data);
+    const response = await api.post('/meal', data);
     return response.data;
   },
   getById: async (id: number) => {
@@ -276,7 +231,7 @@ export const notificationApi = {
     message: string;
     is_read?: boolean;
   }) => {
-    const response = await api.post('/notification/', data);
+    const response = await api.post('/notification', data);
     return response.data;
   },
   getById: async (id: number) => {
@@ -302,7 +257,7 @@ export const notificationApi = {
 
 export const predictionHistoryApi = {
   getAll: async () => {
-    const response = await api.get('/prediction_history/');
+    const response = await api.get('/prediction_history');
     return response.data;
   },
   create: async (data: {
@@ -311,7 +266,7 @@ export const predictionHistoryApi = {
     input_data: Record<string, any>;
     prediction_result: string;
   }) => {
-    const response = await api.post('/prediction_history/', data);
+    const response = await api.post('/prediction_history', data);
     return response.data;
   },
   getById: async (id: number) => {
@@ -337,7 +292,7 @@ export const predictionHistoryApi = {
 
 export const stepRecordApi = {
   getAll: async () => {
-    const response = await api.get('/step_record/');
+    const response = await api.get('/step_record');
     return response.data;
   },
   create: async (data: {
@@ -345,7 +300,7 @@ export const stepRecordApi = {
     steps: number;
     recorded_at: string;
   }) => {
-    const response = await api.post('/step_record/', data);
+    const response = await api.post('/step_record', data);
     return response.data;
   },
   getById: async (id: number) => {
@@ -370,7 +325,7 @@ export const stepRecordApi = {
 
 export const workoutApi = {
   getAll: async () => {
-    const response = await api.get('/workout/');
+    const response = await api.get('/workout');
     return response.data;
   },
   create: async (data: {
@@ -379,7 +334,7 @@ export const workoutApi = {
     duration_minutes: number;
     calories_burned: number;
   }) => {
-    const response = await api.post('/workout/', data);
+    const response = await api.post('/workout', data);
     return response.data;
   },
   getById: async (id: number) => {

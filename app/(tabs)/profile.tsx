@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { User, Mail, Calendar, Ruler, Scale, CreditCard as Edit2, Save, Settings, Bell, Moon, ChevronRight, LogOut, Target } from 'lucide-react-native';
@@ -11,17 +11,47 @@ export default function Profile() {
   const [notifications, setNotifications] = useState(true);
   const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
   const [userData, setUserData] = useState({
-    name: 'Sarah Johnson',
-    email: 'sarah.j@example.com',
-    birth_date: '1990-05-15',
-    height_cm: '165',
-    weight_kg: '62',
-    gender: 'F',
+    id: 1, // Substituir pelo ID real do usuário logado
+    name: '',
+    email: '',
+    birth_date: '',
+    height_cm: '',
+    weight_kg: '',
+    gender: '',
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  // Carregar dados do usuário ao montar
+  useEffect(() => {
+    async function fetchUser() {
+      setLoading(true);
+      setError(null);
+      try {
+        // Substitua 1 pelo ID do usuário autenticado
+        const user = await userApi.getById(userData.id);
+        setUserData({
+          ...userData,
+          ...user,
+          height_cm: user.height_cm?.toString() || '',
+          weight_kg: user.weight_kg?.toString() || '',
+        });
+      } catch (err) {
+        setError('Erro ao carregar dados do perfil.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = async () => {
+    setError(null);
+    setSuccess(null);
     try {
-      await userApi.update(1, {
+      await userApi.update(userData.id, {
         name: userData.name,
         email: userData.email,
         birth_date: userData.birth_date,
@@ -29,11 +59,14 @@ export default function Profile() {
         weight_kg: parseInt(userData.weight_kg),
         gender: userData.gender as 'M' | 'F' | 'O',
       });
+      setSuccess('Perfil atualizado com sucesso!');
       setIsEditing(false);
     } catch (error) {
-      console.error('Falha ao atualizar perfil:', error);
+      setError('Falha ao atualizar perfil.');
     }
   };
+
+
 
   const handleLogout = async () => {
     try {
@@ -60,8 +93,8 @@ export default function Profile() {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View style={styles.profileHeader}>
-            <Image
-              source={{ uri: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg' }}
+          <Image
+              source={{ uri: 'https://www.google.com/imgres?q=user%20image&imgurl=https%3A%2F%2Fimg.freepik.com%2Fvetores-premium%2Ficone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg%3Fsemt%3Dais_hybrid%26w%3D740&imgrefurl=https%3A%2F%2Fbr.freepik.com%2Ffotos-vetores-gratis%2Fuser-icon&docid=5vdPIOnX0LGRsM&tbnid=JsYfjNWutDlZ3M&vet=12ahUKEwifi8P8seqNAxVFu5UCHUS-GBYQM3oECD0QAA..i&w=740&h=740&hcb=2&ved=2ahUKEwifi8P8seqNAxVFu5UCHUS-GBYQM3oECD0QAA' }}
               style={styles.profileImage}
             />
             <TouchableOpacity
@@ -83,6 +116,15 @@ export default function Profile() {
       </View>
 
       <View style={styles.content}>
+        {loading && (
+          <Text style={{ color: colors.text.secondary, textAlign: 'center', marginVertical: 16 }}>Carregando perfil...</Text>
+        )}
+        {error && (
+          <Text style={{ color: colors.error, textAlign: 'center', marginVertical: 8 }}>{error}</Text>
+        )}
+        {success && (
+          <Text style={{ color: colors.success, textAlign: 'center', marginVertical: 8 }}>{success}</Text>
+        )}
         <View style={[styles.section, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>
           <View style={styles.sectionHeader}>
             <User size={24} color={colors.primary} />
@@ -237,12 +279,8 @@ export default function Profile() {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: colors.error }]}
-          onPress={handleLogout}>
-          <LogOut size={24} color="white" />
-          <Text style={styles.logoutText}>Sair</Text>
-        </TouchableOpacity>
+
+
       </View>
     </ScrollView>
   );
