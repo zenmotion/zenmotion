@@ -21,18 +21,18 @@
 
 ---
 
+## 👨‍💻 Autores
+
+**[Daniel Lucas dos Santos Corte - 202403517949]** - [daniellcorte@gmail.com](mailto:daniellcorte@gmail.com) <br>
+**[Julio Alexsandro Monteiro da Silva - 202403945487]** - [julioalexsandro.monteiro13@gmail.com](mailto:julioalexsandro.monteiro13@gmail.com)
+
+---
+
 ## 🎯 Sobre o Projeto
 
 Este repositório contém o código-fonte do **aplicativo móvel ZenMotion**. Ele foi desenvolvido com React Native e Expo para oferecer uma experiência de usuário fluida e intuitiva em dispositivos iOS e Android.
 
 O aplicativo consome a [API do backend do ZenMotion](https://github.com/zenmotion/backend) para fornecer todas as funcionalidades, como login, registro de refeições, monitoramento de exercícios e visualização de progresso.
-
----
-
-## 👨‍💻 Autor
-
-**[Daniel Lucas dos Santos Corte - 202403517949]** - [daniellcorte@gmail.com](mailto:daniellcorte@gmail.com) <br>
-**[Julio Alexsandro Monteiro da Silva - 202403945487]** - [julioalexsandro.monteiro13@gmail.com](mailto:julioalexsandro.monteiro13@gmail.com)
 
 ---
 
