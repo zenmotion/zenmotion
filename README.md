@@ -14,9 +14,9 @@
 ## 🖼️ Telas do Aplicativo
 
 <p align="center">
-  <img src="URL_IMAGEM_LOGIN.png" alt="Tela de Login" width="200"/>
-  <img src="URL_IMAGEM_HOME.png" alt="Tela Home" width="200"/>
-  <img src="URL_IMAGEM_NUTRICAO.png" alt="Tela de Nutrição" width="200"/>
+  <img src="assets/images/home.png" alt="Tela de Home" width="200"/>
+  <img src="assets/images/nutricao.png" alt="Tela de Nutrição" width="200"/>
+  <img src="assets/images/metas.png" alt="Tela de Metas" width="200"/>
 </p>
 
 ---
