@@ -11,20 +11,20 @@
   </p>
 </div>
 
-## 🖼️ Telas do Aplicativo
-
-<p align="center">
-  <img src="assets/images/home.png" alt="Tela de Home" width="200"/>
-  <img src="assets/images/nutricao.png" alt="Tela de Nutrição" width="200"/>
-  <img src="assets/images/metas.png" alt="Tela de Metas" width="200"/>
-</p>
-
----
-
 ## 👨‍💻 Autores
 
 **[Daniel Lucas dos Santos Corte - 202403517949]** - [daniellcorte@gmail.com](mailto:daniellcorte@gmail.com) <br>
 **[Julio Alexsandro Monteiro da Silva - 202403945487]** - [julioalexsandro.monteiro13@gmail.com](mailto:julioalexsandro.monteiro13@gmail.com)
+
+---
+
+## 🖼️ Telas do Aplicativo
+
+<p align="center">
+  <img src="assets/images/home.png" alt="Tela de Home" width="190"/>
+  <img src="assets/images/nutricao.png" alt="Tela de Nutrição" width="190"/>
+  <img src="assets/images/metas.png" alt="Tela de Metas" width="190"/>
+</p>
 
 ---
 
