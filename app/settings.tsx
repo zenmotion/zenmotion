@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, TextInput, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -7,6 +7,7 @@ import {
     Moon,
     User,
     Target,
+    Footprints,
     ChevronRight,
     ChevronLeft,
     Ruler,
@@ -16,16 +17,36 @@ import {
 } from 'lucide-react-native';
 import { preferencesApi, userApi, authApi } from '@/api/api';
 import { router } from 'expo-router';
+import { userStorage } from '@/utils/userStorage';
 
 export default function Settings() {
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    // Trocar pelo id do usuário autenticado, se disponível
-    const userId = 1;
+ 
+    const [userId, setUserId] = useState<number | null>(null);
+    const [dailyCalorieGoal, setDailyCalorieGoal] = useState<number>(2000);
+    const [dailyStepGoal, setDailyStepGoal] = useState<number>(10000);
+    useEffect(() => {
+        userStorage.getUserId().then(setUserId);
+    }, []);
+    useEffect(() => {
+        if (userId) {
+            preferencesApi.getById(userId).then(pref => {
+                setDailyCalorieGoal(pref.daily_calorie_goal ?? 2000);
+                setDailyStepGoal(pref.daily_step_goal ?? 10000);
+                setNotifications(pref.notifications_enabled);
+                setUnits(pref.preferred_units);
+            }).catch(() => {
+                setDailyCalorieGoal(2000);
+                setDailyStepGoal(10000);
+            });
+        }
+    }, [userId]);
 
     const handleDeleteProfile = async () => {
+        if (!userId) return;
         setDeleting(true);
         setDeleteError(null);
         setDeleteSuccess(null);
@@ -56,20 +77,24 @@ export default function Settings() {
     };
 
     const updatePreferences = async () => {
+        if (!userId) return;
         try {
-            await preferencesApi.update(1, {
+            await preferencesApi.update(userId, {
                 notifications_enabled: notifications,
                 preferred_units: units,
+                daily_calorie_goal: dailyCalorieGoal,
+                daily_step_goal: dailyStepGoal,
             });
         } catch (error) {
             console.error('Falha ao atualizar preferências:', error);
         }
     };
 
+
+
     return (
         <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
 
-            {/* Botão de Voltar */}
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <ChevronLeft size={20} color={colors.text.primary} />
                 <Text style={[styles.backButtonText, { color: colors.text.primary }]}>Voltar</Text>
@@ -96,6 +121,39 @@ export default function Settings() {
 
             <View style={styles.section}>
                 <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Preferências</Text>
+
+                {/* Campo para meta diária de calorias */}
+                <View style={[styles.settingItem, { backgroundColor: colors.card.background, ...colors.card.shadow }]}> 
+                    <View style={styles.settingContent}>
+                        <Target size={24} color={colors.primary} />
+                        <Text style={[styles.settingText, { color: colors.text.primary }]}>Meta diária de calorias</Text>
+                    </View>
+                    <TextInput
+                        style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary, width: 90, textAlign: 'right' }]}
+                        keyboardType="numeric"
+                        value={String(dailyCalorieGoal)}
+                        onChangeText={text => setDailyCalorieGoal(Number(text.replace(/\D/g, '')))}
+                        onBlur={updatePreferences}
+                        placeholder="kcal"
+                        maxLength={5}
+                    />
+                </View>
+                {/* Campo para meta diária de passos */}
+                <View style={[styles.settingItem, { backgroundColor: colors.card.background, ...colors.card.shadow }]}> 
+                    <View style={styles.settingContent}>
+                        <Footprints size={24} color={colors.primary} />
+                        <Text style={[styles.settingText, { color: colors.text.primary }]}>Meta diária de passos</Text>
+                    </View>
+                    <TextInput
+                        style={[styles.inputHalf, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text.primary, width: 90, textAlign: 'right' }]}
+                        keyboardType="numeric"
+                        value={String(dailyStepGoal)}
+                        onChangeText={text => setDailyStepGoal(Number(text.replace(/\D/g, '')))}
+                        onBlur={updatePreferences}
+                        placeholder="passos"
+                        maxLength={6}
+                    />
+                </View>
 
                 <View style={[styles.settingItem, { backgroundColor: colors.card.background, ...colors.card.shadow }]}>
                     <View style={styles.settingContent}>
@@ -146,14 +204,7 @@ export default function Settings() {
 
             <View style={styles.section}>
                 <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Dados</Text>
-                <TouchableOpacity
-                    style={[styles.deleteButton, deleting && { opacity: 0.7 }]}
-                    onPress={() => setShowDeleteModal(true)}
-                    disabled={deleting}
-                >
-                    <Scale size={24} color={'white'} />
-                    <Text style={styles.deleteButtonText}>Excluir Conta</Text>
-                </TouchableOpacity>
+
                 {deleteError && (
                     <Text style={{ color: colors.error, textAlign: 'center', marginBottom: 8 }}>{deleteError}</Text>
                 )}
@@ -220,21 +271,25 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
+    inputHalf: {
+        borderRadius: 12,
+        padding: 16,
+        fontFamily: 'Inter_400Regular',
+        fontSize: 16,
+        borderWidth: 1,
+        width: '100%',
+    },
     deleteButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 12,
-        backgroundColor: '#ef4444', // vermelho
+        marginRight: 16,
+        marginLeft: 16,
+        marginBottom: 0,
+        padding: 16,
         borderRadius: 12,
-        paddingVertical: 16,
-        marginTop: 16,
-        marginBottom: 8,
-        shadowColor: '#ef4444',
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 4,
+        gap: 8,
+        backgroundColor: '#ef4444',
     },
     deleteButtonText: {
         color: 'white',

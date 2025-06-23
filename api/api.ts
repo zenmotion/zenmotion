@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { router } from 'expo-router';
 
-// Defina API_BASE_URL no seu .env para apontar para o backend desejado. Exemplo:
-// API_BASE_URL=http://localhost:8000/api
 const BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
 
 export const api = axios.create({
@@ -15,7 +13,6 @@ export const api = axios.create({
 export const authApi = {
   login: async (email: string, password: string) => {
     const response = await api.post('/login/', { email, password });
-    // Aqui você pode salvar o estado de usuário autenticado, se necessário
     return response.data;
   },
   register: async (userData: {
@@ -64,36 +61,47 @@ export const userApi = {
   },
 };
 
+export interface UserPreferences {
+  id: number;
+  user: number;
+  daily_step_goal: number;
+  daily_calorie_goal: number;
+  preferred_units: 'metric' | 'imperial';
+  notifications_enabled: boolean;
+}
+
 export const preferencesApi = {
-  getAll: async () => {
+  getAll: async (): Promise<UserPreferences[]> => {
     const response = await api.get('/user_preferences');
     return response.data;
   },
   create: async (data: {
     user: number;
     daily_step_goal: number;
+    daily_calorie_goal: number;
     preferred_units: 'metric' | 'imperial';
     notifications_enabled: boolean;
-  }) => {
+  }): Promise<UserPreferences> => {
     const response = await api.post('/user_preferences', data);
     return response.data;
   },
-  getById: async (id: number) => {
+  getById: async (id: number): Promise<UserPreferences> => {
     const response = await api.get(`/user_preferences/id/${id}`);
     return response.data;
   },
   update: async (id: number, data: Partial<{
     daily_step_goal: number;
+    daily_calorie_goal: number;
     preferred_units: 'metric' | 'imperial';
     notifications_enabled: boolean;
-  }>) => {
+  }>): Promise<UserPreferences> => {
     const response = await api.patch(`/user_preferences/id/${id}`, data);
     return response.data;
   },
   delete: async (id: number) => {
     await api.delete(`/user_preferences/id/${id}`);
   },
-  search: async (term: string) => {
+  search: async (term: string): Promise<UserPreferences[]> => {
     const response = await api.get(`/user_preferences/search/?search=${term}`);
     return response.data;
   },
@@ -182,6 +190,10 @@ export const healthReportApi = {
 export const mealApi = {
   getAll: async () => {
     const response = await api.get('/meal');
+    return response.data;
+  },
+  getByUserAndDate: async (user: number, date: string) => {
+    const response = await api.get(`/meal/search/?user=${user}&recorded_at=${date}`);
     return response.data;
   },
   create: async (data: {
@@ -326,6 +338,10 @@ export const stepRecordApi = {
 export const workoutApi = {
   getAll: async () => {
     const response = await api.get('/workout');
+    return response.data;
+  },
+  getByUserAndDate: async (user: number, date: string) => {
+    const response = await api.get(`/workout/search/?user=${user}&date=${date}`);
     return response.data;
   },
   create: async (data: {

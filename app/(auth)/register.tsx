@@ -12,12 +12,15 @@ import {
   Modal,
 } from 'react-native';
 import { Link, router } from 'expo-router';
-import { authApi } from '@/api/api';
+import { authApi, preferencesApi } from '@/api/api';
 import { useTheme } from '@/contexts/ThemeContext';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import dayjs from 'dayjs';
 
 const windowWidth = Dimensions.get('window').width;
+
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Register() {
   const { colors } = useTheme();
@@ -34,6 +37,16 @@ export default function Register() {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isGenderPickerVisible, setGenderPickerVisibility] = useState(false);
 
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      const user = await AsyncStorage.getItem('user');
+      if (user) {
+        router.replace('/(tabs)');
+      }
+    };
+    checkLoggedIn();
+  }, []);
+
   const genderOptions = [
     { label: 'Masculino', value: 'M' },
     { label: 'Feminino', value: 'F' },
@@ -42,16 +55,34 @@ export default function Register() {
 
   const handleRegister = async () => {
     try {
-      await authApi.register({
+      // Cria o usuário
+      const user = await authApi.register({
         ...formData,
+        gender: formData.gender as 'M' | 'F' | 'O',
         height_cm: Number(formData.height_cm),
         weight_kg: Number(formData.weight_kg),
       });
+
+      // Cria preferências padrão para o usuário recém-criado
+      try {
+        await preferencesApi.create({
+          user: user.id,
+          daily_step_goal: 10000,
+          daily_calorie_goal: 2000,
+          preferred_units: 'metric',
+          notifications_enabled: true,
+        });
+      } catch (prefErr) {
+        // Não bloqueia o cadastro se falhar, mas loga
+        console.error('Falha ao criar preferências iniciais:', prefErr);
+      }
+
       router.replace('/login');
     } catch (err) {
       setError('Falha no cadastro. Por favor, tente novamente.');
     }
   };
+
 
   // Formata a data para exibir no mobile
   const formatDisplayDate = (dateStr: string) => {

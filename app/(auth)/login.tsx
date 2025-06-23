@@ -5,11 +5,23 @@ import { authApi } from '@/api/api';
 import { useTheme } from '@/contexts/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { useEffect } from 'react';
+
 export default function Login() {
     const { colors } = useTheme();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const checkLoggedIn = async () => {
+            const user = await AsyncStorage.getItem('user');
+            if (user) {
+                router.replace('/(tabs)');
+            }
+        };
+        checkLoggedIn();
+    }, []);
 
     const handleLogin = async () => {
         try {
@@ -64,9 +76,9 @@ export default function Login() {
                     <Text style={[styles.linkText, { color: colors.primary }]}>Não tem uma conta? Cadastre-se</Text>
                 </Link>
 
-                <Link href="/forgot-password" style={styles.link}>
+                {/* <Link href="/forgot-password" style={styles.link}>
                     <Text style={[styles.linkText, { color: colors.primary }]}>Esqueceu a senha?</Text>
-                </Link>
+                </Link> */}
             </View>
         </ScrollView>
     );

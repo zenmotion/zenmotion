@@ -4,6 +4,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Play, Pause, Plus, Timer, Flame } from 'lucide-react-native';
 import { workoutApi } from '@/api/api';
 import ExerciseModal from '@/components/ExerciseModal';
+import { userStorage } from '@/utils/userStorage';
 
 type WorkoutType = {
   id: number;
@@ -39,8 +40,11 @@ export default function Exercise() {
 
   const loadWorkouts = async () => {
     try {
-      const response = await workoutApi.getAll();
-      setRecentWorkouts(response.map((workout: any) => ({
+      const userId = await userStorage.getUserId();
+      if (!userId) return;
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayWorkouts = await workoutApi.getByUserAndDate(userId, todayStr);
+      setRecentWorkouts(todayWorkouts.map((workout: any) => ({
         ...workout,
         date: new Date(workout.date || workout.created_at).toLocaleString('pt-BR', {
           day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'
@@ -54,10 +58,12 @@ export default function Exercise() {
   const handleSaveWorkout = async () => {
     try {
       const minutes = Math.floor(workoutTime / 60);
-      const calories = Math.round(minutes * 8); // Cálculo simplificado
+      const calories = Math.round(minutes * 8);
 
+      const userId = await userStorage.getUserId();
+      if (!userId) throw new Error('Usuário não autenticado');
       await workoutApi.create({
-        user: 1, // Substituir pelo ID do usuário atual
+        user: userId,
         type: 'Treino',
         duration_minutes: minutes,
         calories_burned: calories,

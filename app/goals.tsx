@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Target, Plus, Check, Flag, Calendar, ChevronLeft } from 'lucide-react-native';
 import { goalApi } from '@/api/api';
+import { userStorage } from '@/utils/userStorage';
 import GoalModal from '@/components/GoalModal';
 
 type GoalType = {
@@ -27,8 +28,11 @@ export default function Goals() {
 
     const loadGoals = async () => {
         try {
+            const userId = await userStorage.getUserId();
+            if (!userId) return;
             const response = await goalApi.getAll();
-            setGoals(response);
+            const userGoals = response.filter((goal: any) => goal.user === userId);
+            setGoals(userGoals);
         } catch (error) {
             console.error('Erro ao carregar metas:', error);
             Alert.alert('Erro', 'Não foi possível carregar as metas');

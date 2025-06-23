@@ -4,6 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'reac
 import { useTheme } from '@/contexts/ThemeContext';
 import { X } from 'lucide-react-native';
 import { mealApi } from '@/api/api';
+import { userStorage } from '@/utils/userStorage';
 
 type NutritionModalProps = {
   isVisible: boolean;
@@ -38,7 +39,6 @@ export default function NutritionModal({ isVisible, onClose, onSave, initialData
     fat: initialData?.fat?.toString() || '',
   });
 
-  // Reset form when opening for new meal
   React.useEffect(() => {
     if (!initialData && isVisible) {
       setFormData({
@@ -63,8 +63,10 @@ export default function NutritionModal({ isVisible, onClose, onSave, initialData
 
   const handleSave = async () => {
     try {
+      const userId = await userStorage.getUserId();
+      if (!userId) throw new Error('Usuário não autenticado');
       const data = {
-        user: 1, // Replace with actual user ID
+        user: userId,
         meal_type: formData.meal_type,
         food_items: formData.food_items,
         calories: parseInt(formData.calories),

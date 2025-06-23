@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'reac
 import { useTheme } from '@/contexts/ThemeContext';
 import { X } from 'lucide-react-native';
 import { workoutApi } from '@/api/api';
+import { userStorage } from '@/utils/userStorage';
 
 type ExerciseModalProps = {
   isVisible: boolean;
@@ -35,8 +36,10 @@ export default function ExerciseModal({ isVisible, onClose, onSave, initialData 
 
   const handleSave = async () => {
     try {
+      const userId = await userStorage.getUserId();
+      if (!userId) throw new Error('Usuário não autenticado');
       const data = {
-        user: 1, // Replace with actual user ID
+        user: userId,
         type: formData.type,
         duration_minutes: parseInt(formData.duration_minutes),
         calories_burned: parseInt(formData.calories_burned),
