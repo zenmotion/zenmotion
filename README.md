@@ -34,7 +34,7 @@ Este repositório contém o código-fonte do **aplicativo móvel ZenMotion**. El
 
 O aplicativo consome a [API do backend do ZenMotion](https://github.com/zenmotion/backend) para fornecer todas as funcionalidades, como login, registro de refeições, monitoramento de exercícios e visualização de progresso.
 Link da documentação: [Documentação](https://docs.google.com/document/d/1AasrrUBn9MBefa20Csc7duaQfjfH-jmJ9g0FmJ2SWY4/edit?usp=sharing).
-Link da apresentação: [Apresentação]([https://docs.google.com/document/d/1AasrrUBn9MBefa20Csc7duaQfjfH-jmJ9g0FmJ2SWY4/edit?usp=sharing](https://www.canva.com/design/DAGrZWj5BS8/DnCThqi20pQDmxIKY5lu3w/edit?utm_content=DAGrZWj5BS8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)).
+Link da apresentação: [Apresentação](https://www.canva.com/design/DAGrZWj5BS8/DnCThqi20pQDmxIKY5lu3w/edit?utm_content=DAGrZWj5BS8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton).
 
 ---
 
